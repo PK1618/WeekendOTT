@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: ${DRIVER_CLASS_NAME}
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: "true"
+
+  # optional: helps debugging SQL
+  # show-sql: true
+
+
+server:
+  port: 8080
+
+aws:
+  region: ${AWS_REGION}
+  s3:
+    bucket: ${AWS_S3_BUCKET}
+app:
+  frontend-url: ${FRONTEND_URL}
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: 604800000
+  admin:
+    emails: ${ADMIN_EMAILS}

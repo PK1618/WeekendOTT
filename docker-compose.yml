@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+
+  backend:
+    build: ./weekendott-backend
+    container_name: weekendott-backend
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DRIVER_CLASS_NAME: org.postgresql.Driver
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: http://localhost
+      ADMIN_EMAILS: ${ADMIN_EMAILS}
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      SPRING_PROFILES_ACTIVE: dev
+
+  frontend:
+    build: ./weekendott-frontend
+    container_name: weekendott-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend

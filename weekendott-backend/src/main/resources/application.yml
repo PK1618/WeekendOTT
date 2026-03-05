@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: "weekendott"
+
+  profiles:
+    active: "dev"
+
+#app:
+#  seed:
+#    force: "true"

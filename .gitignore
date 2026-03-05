@@ -1,0 +1,23 @@
+# Secrets
+.env
+.env.*
+
+# Backend
+weekendott-backend/target/
+weekendott-backend/.idea/
+weekendott-backend/*.iml
+weekendott-backend/.env
+
+# Frontend
+weekendott-frontend/node_modules/
+weekendott-frontend/dist/
+weekendott-frontend/.env
+weekendott-frontend/.env.local
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
