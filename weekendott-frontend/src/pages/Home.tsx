@@ -7,6 +7,7 @@ import FilterBar, { type Filters } from "../components/FilterBar";
 export default function Home() {
   const [homeData, setHomeData] = useState<HomeResponse | null>(null);
   const [homeLoading, setHomeLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Filtered/search state
   const [filtered, setFiltered] = useState<MovieCard[] | null>(null);
@@ -20,9 +21,28 @@ export default function Home() {
   const isFiltering = activeFilters.q || activeFilters.platform || activeFilters.genre || activeFilters.language;
 
   useEffect(() => {
-    fetchHome()
-      .then(setHomeData)
-      .finally(() => setHomeLoading(false));
+    const fetchWithRetry = async (retries = 3) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const data = await fetchHome();
+          setHomeData(data);
+          return;
+        } catch (err) {
+          if (i === retries - 1) throw err;
+          await new Promise(r => setTimeout(r, 1000 * (i + 1))); // 1s, 2s delay
+        }
+      }
+    };
+
+    fetchWithRetry()
+        .catch((err) => {
+          if (err.code === 'ECONNABORTED') {
+            setError("Server is warming up — please refresh in a moment.");
+          } else {
+            setError("Failed to load movies. Please try again.");
+          }
+        })
+        .finally(() => setHomeLoading(false));
   }, []);
 
   const handleFilterChange = useCallback(async (filters: Filters) => {
@@ -81,6 +101,9 @@ export default function Home() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 pb-16">
+
+        {/*temporary error display*/}
+        {error && <p className="text-red-400 text-center p-4 text-lg">{error}</p>}
 
         {/* Filtered results */}
         {isFiltering ? (

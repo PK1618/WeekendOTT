@@ -1,23 +1,28 @@
 package org.pk0918.weekendott.security;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.pk0918.weekendott.entities.User;
 import org.pk0918.weekendott.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(OAuth2SuccessHandler.class);
 
     private final UserRepository userRepository;
@@ -30,6 +35,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     // Using String + split instead of List<String> to avoid YAML binding issues
     @Value("${app.admin.emails:}")
     private String adminEmailsRaw;
+
+    @Value("${app.cookie.secure:true}")
+    private boolean cookieSecure;
 
     @Override
     public void onAuthenticationSuccess(
@@ -80,9 +88,29 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // Issue our own JWT
         String jwt = jwtUtil.generateToken(user);
 
-        // Redirect to frontend with token as query param
-        // Frontend extracts it from URL and stores in memory — never touches localStorage
-        String redirectUrl = frontendUrl + "/auth/callback?token=" + jwt;
-        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
+//        Cookie cookie = new Cookie("wott_token", jwt);
+//        cookie.setHttpOnly(true);
+//        cookie.setSecure(true);
+//        cookie.setPath("/");
+//        cookie.setMaxAge(7*24*60*60);
+//        response.addCookie(cookie);
+//
+//        String cookieHeader = response.getHeader("Set-Cookie");
+//        if(cookieHeader != null){
+//            response.setHeader("Set-Cookie", cookieHeader + "; SameSite=Lax");
+//        }
+
+        ResponseCookie cookie = ResponseCookie.from("jwt", jwt)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(Duration.ofMinutes(30))
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        // Redirect directly to frontend home — no token in URL
+        getRedirectStrategy().sendRedirect(request, response, frontendUrl + "/");
+        log.info("Redirecting to frontendurl: {}", frontendUrl);
     }
 }

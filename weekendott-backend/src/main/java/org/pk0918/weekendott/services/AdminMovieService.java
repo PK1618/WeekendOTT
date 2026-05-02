@@ -9,10 +9,7 @@ import org.pk0918.weekendott.entities.Genre;
 import org.pk0918.weekendott.entities.Movie;
 import org.pk0918.weekendott.entities.MovieAvailability;
 import org.pk0918.weekendott.entities.Platform;
-import org.pk0918.weekendott.repositories.GenreRepository;
-import org.pk0918.weekendott.repositories.MovieAvailabilityRepository;
-import org.pk0918.weekendott.repositories.MovieRepository;
-import org.pk0918.weekendott.repositories.PlatformRepository;
+import org.pk0918.weekendott.repositories.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -30,6 +27,8 @@ public class AdminMovieService {
     private final GenreRepository genreRepo;
     private final PlatformRepository platformRepo;
     private final MovieAvailabilityRepository availabilityRepo;
+    private final RatingRepository ratingRepo;
+    private final CommentRepository commentRepo;
 
     public Page<AdminMovieResponse> listAll(int page, int size) {
         return movieRepo
@@ -67,6 +66,12 @@ public class AdminMovieService {
     public void deleteMovie(UUID id) {
         Movie movie = movieRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Movie not found: " + id));
+
+        // Delete child records first to avoid foreign key constraint violations
+        commentRepo.deleteAllByMovieId(id);
+        ratingRepo.deleteAllByMovieId(id);
+        availabilityRepo.deleteAll(movie.getAvailability());
+
         movieRepo.delete(movie);
     }
 

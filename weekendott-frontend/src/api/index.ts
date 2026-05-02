@@ -11,14 +11,20 @@ import type {
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
   headers: { "Content-Type": "application/json" },
+  withCredentials: true,
+  timeout: 15000,
 });
 
-// Attach JWT token to every request automatically
 api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem("wott_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  const xsrfToken = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("XSRF-TOKEN="))
+    ?.split("=")[1];
+
+  if (xsrfToken) {
+    config.headers["X-XSRF-TOKEN"] = decodeURIComponent(xsrfToken);
   }
+
   return config;
 });
 

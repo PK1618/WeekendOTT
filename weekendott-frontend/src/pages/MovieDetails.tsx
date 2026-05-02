@@ -191,8 +191,6 @@ export default function MovieDetails() {
             {/* Rating box */}
             <RatingBox
               movieId={movie.id}
-              currentAvg={movie.avgRating}
-              currentCount={movie.ratingCount}
             />
           </div>
         </div>

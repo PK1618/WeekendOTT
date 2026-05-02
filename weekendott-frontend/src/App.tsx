@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import MovieDetails from "./pages/MovieDetails";
-import AuthCallback from "./pages/AuthCallback";
+// import AuthCallback from "./pages/AuthCallback";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminMovieList from "./pages/admin/AdminMovieList";
@@ -104,7 +104,7 @@ function AppRoutes() {
         }
       />
 
-      <Route path="/auth/callback" element={<AuthCallback />} />
+      {/*<Route path="/auth/callback" element={<AuthCallback />} />*/}
 
       <Route
         path="/admin"

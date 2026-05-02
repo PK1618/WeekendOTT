@@ -3,6 +3,7 @@ package org.pk0918.weekendott.security;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -38,22 +39,29 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain chain
     ) throws ServletException, IOException {
 
-        String header = request.getHeader("Authorization");
-        log.debug("JwtFilter | {} {} | Authorization header: {}",
-                request.getMethod(), request.getRequestURI(),
-                header != null ? "present" : "MISSING");
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if(cookies != null) {
+            for(Cookie cookie : cookies) {
+                if("jwt".equals(cookie.getName())){
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
 
-        // No token → continue as anonymous (public endpoints still work)
-        if (header == null || !header.startsWith("Bearer ")) {
+        log.debug("JwtFilter | {} {} | Cookie token: {}",
+                request.getMethod(), request.getRequestURI(),
+                token != null ? "present" : "MISSING");
+
+        if(token == null) {
             chain.doFilter(request, response);
             return;
         }
-
-        String token = header.substring(7);
         Claims claims = jwtUtil.validateAndParse(token);
         log.info("JwtFilter | claims parsed: {}", claims != null ? "OK email=" + claims.get("email") : "NULL/INVALID");
 
-        if (claims != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (claims != null) {
             UUID userId = jwtUtil.getUserId(claims);
             String email = jwtUtil.getEmail(claims);
             String name  = claims.get("name", String.class);

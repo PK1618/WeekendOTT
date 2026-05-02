@@ -21,4 +21,5 @@ public interface RatingRepository extends JpaRepository<Rating, UUID> {
     Double getAverageRating(@Param("movieId") UUID movieId);
 
     long countByMovieId(UUID movieId);
+    void deleteAllByMovieId(UUID movieId);
 }

@@ -14,4 +14,5 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
             UUID movieId,
             Pageable pageable
     );
+    void deleteAllByMovieId(UUID movieId);
 }
